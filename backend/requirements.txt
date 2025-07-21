@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+aiofiles
+requests
+certifi
+python-multipart
+aiohttp
