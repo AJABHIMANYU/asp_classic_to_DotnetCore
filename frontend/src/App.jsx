@@ -1,122 +1,43 @@
-// import React, { useState } from 'react';
- 
-// function App() {
-//   const [file, setFile] = useState(null);
-//   const [githubLink, setGithubLink] = useState('https://github.com/Aarzoo0/myClassicASPApp');
-//   const [namespace, setNamespace] = useState('MyUserManagementApp');
-//   const [message, setMessage] = useState('');
- 
-//   const handleFileChange = (event) => {
-//     setFile(event.target.files[0]);
-//   };
- 
-//   const handleSubmit = async (event) => {
-//     event.preventDefault();
-//     if (!file) {
-//       setMessage('Please upload a JSON file.');
-//       return;
-//     }
- 
-//     const formData = new FormData();
-//     formData.append('json_file', file);
-//     formData.append('github_link', githubLink);
-//     formData.append('namespace', namespace);
- 
-//     try {
-//       const response = await fetch('http://localhost:8000/generate-project', {
-//         method: 'POST',
-//         body: formData,
-//       });
- 
-//       if (response.ok) {
-//         const blob = await response.blob();
-//         const url = window.URL.createObjectURL(blob);
-//         const a = document.createElement('a');
-//         a.href = url;
-//         a.download = `${namespace}.zip`;
-//         a.click();
-//         window.URL.revokeObjectURL(url);
-//         setMessage('Project generated and downloaded successfully!');
-//       } else {
-//         const error = await response.json();
-//         setMessage(`Error: ${error.detail || 'Failed to generate project'}`);
-//       }
-//     } catch (error) {
-//       setMessage(`Error: ${error.message}`);
-//     }
-//   };
- 
-//   return (
-//     <div style={{ padding: '20px', fontFamily: 'Arial' }}>
-//       <h1>Generate ASP.NET Core Project</h1>
-//       <form onSubmit={handleSubmit}>
-//         <div style={{ marginBottom: '10px' }}>
-//           <label>Upload Analysis JSON File:</label>
-//           <input
-//             type="file"
-//             accept=".json"
-//             onChange={handleFileChange}
-//             style={{ marginLeft: '10px' }}
-//             required
-//           />
-//         </div>
-//         <div style={{ marginBottom: '10px' }}>
-//           <label>GitHub Link:</label>
-//           <input
-//             type="text"
-//             value={githubLink}
-//             onChange={(e) => setGithubLink(e.target.value)}
-//             style={{ marginLeft: '10px', width: '300px' }}
-//           />
-//         </div>
-//         <div style={{ marginBottom: '10px' }}>
-//           <label>Namespace:</label>
-//           <input
-//             type="text"
-//             value={namespace}
-//             onChange={(e) => setNamespace(e.target.value)}
-//             style={{ marginLeft: '10px', width: '300px' }}
-//           />
-//         </div>
-//         <button type="submit" style={{ padding: '5px 10px' }}>
-//           Generate Project
-//         </button>
-//       </form>
-//       {message && <p style={{ color: message.includes('Error') ? 'red' : 'green' }}>{message}</p>}
-//     </div>
-//   );
-// }
- 
-// export default App;
- 
 
-
-
-
-
-
-
-
+// src/App.jsx
+ 
 import React, { useState } from 'react';
 import { Search, RefreshCw, ArrowRight, Code, FileText, Settings, CheckCircle } from 'lucide-react';
 import Convert from './components/Convert';
-import Analyzer from './components/Analyzer'
+import Analyzer from './components/Analyzer';
  
 const App = () => {
   const [showConvert, setShowConvert] = useState(false);
   const [showAnalyzer, setShowAnalyzer] = useState(false);
  
+  // This state will hold the ANALYSIS BUNDLE FILE object
+  const [analysisBundle, setAnalysisBundle] = useState(null);
+  const [githubLink, setGithubLink] = useState(''); // Start empty
+  const [namespace, setNamespace] = useState('MyWebApp');
+ 
   const handleAnalysisClick = () => {
+    setAnalysisBundle(null);
     setShowAnalyzer(true);
   };
  
   const handleConversionClick = () => {
+    setAnalysisBundle(null);
     setShowConvert(true);
   };
  
   const handleBackToHome = () => {
     setShowConvert(false);
     setShowAnalyzer(false);
+    setAnalysisBundle(null);
+  };
+ 
+  // This handler now receives the analysis BUNDLE FILE, not the JSON result
+  const handleAnalysisComplete = (bundleFile, completedNamespace, completedGithubLink) => {
+    setAnalysisBundle(bundleFile);      // Store the file object
+    setNamespace(completedNamespace);     // Store the namespace for convenience
+    setGithubLink(completedGithubLink);   // Store the link to show in Convert UI
+    setShowAnalyzer(false);             // Hide the analyzer
+    setShowConvert(true);              // Show the converter component
   };
  
   return (
@@ -124,18 +45,25 @@ const App = () => {
       <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
         rel="stylesheet"
-        integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
-        crossOrigin="anonymous"
       />
      
       {showAnalyzer ? (
-        <Analyzer onBackToHome={handleBackToHome} />
+        <Analyzer
+          onBackToHome={handleBackToHome}
+          onAnalysisComplete={handleAnalysisComplete}
+          initialNamespace={namespace}
+        />
       ) : showConvert ? (
-        <Convert onBackToHome={handleBackToHome} />
-      ) : (
-        // <div className="min-vh-100" style={{background: 'linear-gradient(135deg, #ffffff 0%, #f0fdfa 50%, #ffffff 100%)'}}>
-        <div className="min-vh-100 overflow-x-hidden" style={{background: 'linear-gradient(135deg, #ffffff 0%, #f0fdfa 50%, #ffffff 100%)'}}>
-
+        // The prop passed to Convert is the analysis BUNDLE FILE
+        <Convert
+          onBackToHome={handleBackToHome}
+          analysisBundleFile={analysisBundle}
+          initialNamespace={namespace}
+          initialGithubLink={githubLink}
+        />
+      )  : (
+        // --- Home Page JSX (No changes needed here) ---
+        <div className="min-vh-100" style={{background: 'linear-gradient(135deg, #ffffff 0%, #f0fdfa 50%, #ffffff 100%)'}}>
           <div className="container py-5">
             <div className="text-center mb-5">
               <h1 className="display-3 fw-bold mb-4" style={{
@@ -339,4 +267,3 @@ const App = () => {
 };
  
 export default App;
- 
