@@ -49,4 +49,6 @@ htmlcov/
 .junit/
 
 backend/repo_cache/
+backend/temp_sessions/
+analysis_result.json
 

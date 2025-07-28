@@ -5,3 +5,4 @@ requests
 certifi
 python-multipart
 aiohttp
+llama_index
