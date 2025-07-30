@@ -1895,6 +1895,27 @@ async def root():
 async def health_check():
     return {"status": "healthy"}
 
+
+@generation_app.get("/download/{namespace}")
+async def download_project(namespace: str):
+    """
+    Download the generated project ZIP file for the given namespace.
+    """
+    zip_name = f"{namespace}.zip"
+    if not os.path.exists(zip_name):
+        raise HTTPException(status_code=404, detail=f"Project ZIP for namespace '{namespace}' not found. Please generate the project first.")
+   
+    try:
+        return FileResponse(
+            zip_name,
+            media_type="application/zip",
+            filename=zip_name
+        )
+    except Exception as e:
+        print(f"Error serving ZIP file for {namespace}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error downloading project: {str(e)}")
+ 
+
 if __name__ == "__main__":
     import uvicorn
     print("Starting Generation API server (standalone)...")
